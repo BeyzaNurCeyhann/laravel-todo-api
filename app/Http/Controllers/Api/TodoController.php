@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 class TodoController extends Controller
@@ -55,4 +56,5 @@ class TodoController extends Controller
     {
         // /api/todos/search?q=... - Başlık/açıklamaya göre ara
     }
+    
 }
