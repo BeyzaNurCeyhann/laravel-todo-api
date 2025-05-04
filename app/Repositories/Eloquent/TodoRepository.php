@@ -19,9 +19,9 @@ class TodoRepository extends BaseRepository implements TodoRepositoryInterface
     public function search(string $term)
     {
         return $this->model
-                    ->where('title', 'like', "%$term%")
-                    ->orWhere('description', 'like', "%$term%")
-                    ->get();
+            ->where('title', 'like', "%$term%")
+            ->orWhere('description', 'like', "%$term%")
+            ->get();
     }
 
     /**
