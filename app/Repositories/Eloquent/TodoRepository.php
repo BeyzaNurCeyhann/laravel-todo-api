@@ -38,4 +38,28 @@ class TodoRepository extends BaseRepository implements TodoRepositoryInterface
         $todo->status = $status;
         return $todo->save();
     }
+
+    public function paginateWithFilters(array $filters)
+{
+    $query = $this->model->newQuery();
+
+    // Filtreler
+    if (!empty($filters['status'])) {
+        $query->where('status', $filters['status']);
+    }
+
+    if (!empty($filters['priority'])) {
+        $query->where('priority', $filters['priority']);
+    }
+
+    // Sıralama
+    $sortField = $filters['sort'] ?? 'created_at';
+    $sortOrder = $filters['order'] ?? 'desc';
+
+    $query->orderBy($sortField, $sortOrder);
+
+    // Sayfalama
+    $limit = min((int)($filters['limit'] ?? 10), 50);
+    return $query->paginate($limit)->appends($filters);
+}
 }

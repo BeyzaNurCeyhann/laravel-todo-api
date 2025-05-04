@@ -4,57 +4,95 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Services\Todo\Interfaces\TodoServiceInterface;
+use App\Http\Resources\TodoResource;
+use Symfony\Component\HttpFoundation\Response;
+use App\Http\Requests\StoreTodoRequest;
+use App\Http\Requests\UpdateTodoRequest;
+use App\Http\Requests\UpdateTodoStatusRequest;
 
 class TodoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected TodoServiceInterface $todoService;
+
+    public function __construct(TodoServiceInterface $todoService)
     {
-        //
+        $this->todoService = $todoService;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function index(Request $request)
     {
-        //
+        $todos = $this->todoService->getAllWithFilters($request->all());
+        return TodoResource::collection($todos);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(int $id)
     {
-        //
+        $todo = $this->todoService->getById($id);
+
+        if (!$todo) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Todo bulunamadı'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return new TodoResource($todo->load('categories'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+
+    public function store(StoreTodoRequest $request)
     {
-        //
+        $todo = $this->todoService->create($request->validated())->load('categories');
+        return new TodoResource($todo);
     }
 
-    public function updateStatus(Request $request, $id)
+
+    public function update(UpdateTodoRequest $request, int $id)
     {
-        // /api/todos/{id}/status - Sadece durumu güncelle
+        $todo = $this->todoService->update($id, $request->validated());
+
+        if (!$todo) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Güncellenecek todo bulunamadı'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return new TodoResource($todo->load('categories'));
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+
+    public function updateStatus(UpdateTodoStatusRequest $request, int $id)
     {
-        //
+
+        $todo = $this->todoService->updateStatus($id, $request->validated('status'));
+
+        if (!$todo) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Durumu güncellenecek todo bulunamadı'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return new TodoResource($todo);
     }
 
-    public function search(Request $request)
+
+    public function destroy(int $id)
     {
-        // /api/todos/search?q=... - Başlık/açıklamaya göre ara
+        $deleted = $this->todoService->delete($id);
+
+        if (!$deleted) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Silinecek todo bulunamadı'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Todo başarıyla silindi'
+        ], Response::HTTP_NO_CONTENT); // 204
     }
-    
 }

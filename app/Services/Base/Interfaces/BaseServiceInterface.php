@@ -1,11 +1,10 @@
 <?php
 
-namespace App\Repositories\Interfaces;
+namespace App\Services\Base\Interfaces;
 
-interface BaseRepositoryInterface
+interface BaseServiceInterface
 {
-    
-    public function find(int $id);
+    public function getById(int $id);
     public function create(array $data);
     public function update(int $id, array $data);
     public function delete(int $id);

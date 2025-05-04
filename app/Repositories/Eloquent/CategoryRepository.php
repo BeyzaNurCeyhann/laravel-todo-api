@@ -12,4 +12,9 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
         parent::__construct($model);
     }
 
+    public function all(array $columns = ['*'])
+    {
+        return $this->model->all($columns);
+    }
+
 }

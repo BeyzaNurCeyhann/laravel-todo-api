@@ -14,11 +14,6 @@ class BaseRepository implements BaseRepositoryInterface
         $this->model = $model;
     }
 
-    public function all(array $columns = ['*'])
-    {
-        return $this->model->all($columns);
-    }
-
     public function find(int $id)
     {
         return $this->model->find($id);

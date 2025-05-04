@@ -1,0 +1,14 @@
+<?php
+
+namespace App\Services\Todo\Interfaces;
+
+use App\Services\Base\Interfaces\BaseServiceInterface;
+
+interface TodoServiceInterface extends BaseServiceInterface
+{
+    public function search(string $term);
+    public function updateStatus(int $id, string $status);
+    public function getAllWithFilters(array $filters);
+
+}
+
