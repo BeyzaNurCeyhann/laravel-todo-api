@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Services\Category\Interfaces\CategoryServiceInterface;
 use Illuminate\Http\JsonResponse;
+use App\Http\Resources\TodoResource;
 
 class CategoryController extends Controller
 {
@@ -83,5 +84,22 @@ class CategoryController extends Controller
             'status' => 'success',
             'message' => 'Kategori başarıyla silindi'
         ], 204);
+    }
+
+    public function todos(int $id)
+    {
+        $todos = $this->categoryService->getTodosByCategoryId($id);
+
+        if (!$todos) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'İstenen kaynak bulunamadı.'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => TodoResource::collection($todos)
+        ]);
     }
 }

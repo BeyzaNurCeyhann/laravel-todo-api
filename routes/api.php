@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TodoController;
 use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\StatController;
 
 
 /*
@@ -45,7 +46,12 @@ Route::prefix('categories')->group(function () {
     Route::post('/', [CategoryController::class, 'store']);
     Route::put('/{id}', [CategoryController::class, 'update']);
     Route::delete('/{id}', [CategoryController::class, 'destroy']);
+    Route::get('/{id}/todos', [CategoryController::class, 'todos']);
+});
 
+Route::prefix('stats')->group(function () {
+    Route::get('/todos', [StatController::class, 'todos']);
+    Route::get('/priorities', [StatController::class, 'priorities']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

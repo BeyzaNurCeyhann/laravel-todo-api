@@ -19,4 +19,9 @@ class CategoryService extends BaseService implements CategoryServiceInterface
     {
         return $this->categoryRepository->all();
     }
+
+    public function getTodosByCategoryId(int $id)
+    {
+        return $this->categoryRepository->getTodosByCategoryId($id);
+    }
 }

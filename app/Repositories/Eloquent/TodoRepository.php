@@ -7,12 +7,27 @@ use App\Repositories\Interfaces\TodoRepositoryInterface;
 
 class TodoRepository extends BaseRepository implements TodoRepositoryInterface
 {
+
     public function __construct(Todo $model)
     {
         parent::__construct($model);
     }
 
-    
+    //override edildi
+    public function create(array $data)
+    {
+        $categoryIds = $data['category_ids'] ?? [];
+        unset($data['category_ids']);
+
+        $todo = parent::create($data); // BaseRepo'daki create
+
+        if (!empty($categoryIds)) {
+            $todo->categories()->sync($categoryIds);
+        }
+
+        return $todo;
+    }
+
     public function search(string $term)
     {
         return $this->model
@@ -36,7 +51,7 @@ class TodoRepository extends BaseRepository implements TodoRepositoryInterface
     public function paginateWithFilters(array $filters, array $with = [])
     {
         //dd($filters);
-        $query = Todo::filter($filters);
+        $query = $this->model->with($with)->filter($filters);
 
         $allowedSorts = ['created_at', 'due_date', 'priority'];
         $sort = in_array($filters['sort'] ?? '', $allowedSorts) ? $filters['sort'] : 'created_at';

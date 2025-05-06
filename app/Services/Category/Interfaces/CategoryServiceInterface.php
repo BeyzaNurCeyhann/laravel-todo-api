@@ -7,4 +7,6 @@ use App\Services\Base\Interfaces\BaseServiceInterface;
 interface CategoryServiceInterface extends BaseServiceInterface
 {
     public function getAll(array $filters = []);
+    public function getTodosByCategoryId(int $id);
 }
+

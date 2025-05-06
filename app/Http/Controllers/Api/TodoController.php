@@ -23,7 +23,6 @@ class TodoController extends Controller
     public function index(Request $request)
     {
 
-
         $todos = $this->todoService->getAllWithFilters($request->all(), ['categories']);
         return response()->json([
             'status' => 'success',
@@ -101,6 +100,25 @@ class TodoController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Todo başarıyla silindi'
-        ], Response::HTTP_NO_CONTENT); // 204
+        ], Response::HTTP_NO_CONTENT);
+    }
+
+    public function search(Request $request)
+    {
+        $term = $request->query('q');
+
+        if (!$term) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Arama terimi (q) gerekli.'
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $results = $this->todoService->search($term);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => TodoResource::collection($results)
+        ]);
     }
 }

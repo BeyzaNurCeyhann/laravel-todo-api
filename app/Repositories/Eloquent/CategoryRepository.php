@@ -17,4 +17,15 @@ class CategoryRepository extends BaseRepository implements CategoryRepositoryInt
         return $this->model->all($columns);
     }
 
+    public function getTodosByCategoryId(int $id)
+    {
+        $category = $this->model->find($id);
+
+        if (!$category) {
+            return null;
+        }
+
+        //return $category->todos()->with('categories')->get();
+        return $category->todos()->get();
+    }
 }
