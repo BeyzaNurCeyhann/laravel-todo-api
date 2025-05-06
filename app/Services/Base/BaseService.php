@@ -14,7 +14,7 @@ class BaseService implements BaseServiceInterface
         $this->repository = $repository;
     }
 
-    
+
 
     public function getById(int $id)
     {
@@ -28,7 +28,14 @@ class BaseService implements BaseServiceInterface
 
     public function update(int $id, array $data)
     {
-        return $this->repository->update($id, $data);
+        $model = $this->repository->find($id);
+
+        if (!$model) {
+            return false;
+        }
+
+        $model->update($data);
+        return $model->fresh();
     }
 
     public function delete(int $id)

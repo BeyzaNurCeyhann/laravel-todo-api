@@ -26,8 +26,8 @@ class TodoService extends BaseService implements TodoServiceInterface
         return $this->todoRepository->updateStatus($id, $status);
     }
 
-    public function getAllWithFilters(array $filters)
+    public function getAllWithFilters(array $filters, array $with = [])
     {
-        return $this->todoRepository->paginateWithFilters($filters);
+        return $this->todoRepository->paginateWithFilters($filters, $with);
     }
 }

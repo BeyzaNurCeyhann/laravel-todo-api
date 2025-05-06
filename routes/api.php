@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\TodoController;
+use App\Http\Controllers\Api\CategoryController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +35,16 @@ Route::prefix('todos')->group(function () {
     Route::put('/{id}', [TodoController::class, 'update']); // Güncelleme
     Route::patch('/{id}/status', [TodoController::class, 'updateStatus']); // Durum güncelle
     Route::delete('/{id}', [TodoController::class, 'destroy']); // Silme (soft delete)
+
+});
+
+Route::prefix('categories')->group(function () {
+
+    Route::get('/', [CategoryController::class, 'index']);
+    Route::get('/{id}', [CategoryController::class, 'show']);
+    Route::post('/', [CategoryController::class, 'store']);
+    Route::put('/{id}', [CategoryController::class, 'update']);
+    Route::delete('/{id}', [CategoryController::class, 'destroy']);
 
 });
 

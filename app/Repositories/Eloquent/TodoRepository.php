@@ -12,10 +12,7 @@ class TodoRepository extends BaseRepository implements TodoRepositoryInterface
         parent::__construct($model);
     }
 
-    /**
-     * Başlık veya açıklamaya göre arama
-     * GET /api/todos/search?q=terim
-     */
+    
     public function search(string $term)
     {
         return $this->model
@@ -24,10 +21,7 @@ class TodoRepository extends BaseRepository implements TodoRepositoryInterface
             ->get();
     }
 
-    /**
-     * Sadece todo durumunu günceller
-     * PATCH /api/todos/{id}/status
-     */
+
     public function updateStatus(int $id, string $status)
     {
         $todo = $this->find($id);
@@ -39,27 +33,33 @@ class TodoRepository extends BaseRepository implements TodoRepositoryInterface
         return $todo->save();
     }
 
-    public function paginateWithFilters(array $filters)
-{
-    $query = $this->model->newQuery();
+    public function paginateWithFilters(array $filters, array $with = [])
+    {
+        //dd($filters);
+        $query = Todo::filter($filters);
 
-    // Filtreler
-    if (!empty($filters['status'])) {
-        $query->where('status', $filters['status']);
+        $allowedSorts = ['created_at', 'due_date', 'priority'];
+        $sort = in_array($filters['sort'] ?? '', $allowedSorts) ? $filters['sort'] : 'created_at';
+
+        $order = strtolower($filters['order'] ?? 'desc');
+        $order = in_array($order, ['asc', 'desc']) ? $order : 'desc';
+
+        $query->orderBy($sort, $order);
+
+        $limit = isset($filters['limit']) && $filters['limit'] <= 50 ? (int)$filters['limit'] : 10;
+
+        $paginator = $query->paginate($limit);
+
+        return [
+            'data' => $paginator->items(),
+            'pagination' => [
+                'total' => $paginator->total(),
+                'per_page' => $paginator->perPage(),
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+            ]
+        ];
     }
-
-    if (!empty($filters['priority'])) {
-        $query->where('priority', $filters['priority']);
-    }
-
-    // Sıralama
-    $sortField = $filters['sort'] ?? 'created_at';
-    $sortOrder = $filters['order'] ?? 'desc';
-
-    $query->orderBy($sortField, $sortOrder);
-
-    // Sayfalama
-    $limit = min((int)($filters['limit'] ?? 10), 50);
-    return $query->paginate($limit)->appends($filters);
-}
 }

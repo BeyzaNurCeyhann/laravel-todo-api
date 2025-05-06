@@ -22,8 +22,16 @@ class TodoController extends Controller
 
     public function index(Request $request)
     {
-        $todos = $this->todoService->getAllWithFilters($request->all());
-        return TodoResource::collection($todos);
+
+
+        $todos = $this->todoService->getAllWithFilters($request->all(), ['categories']);
+        return response()->json([
+            'status' => 'success',
+            'data' => TodoResource::collection($todos['data']),
+            'meta' => [
+                'pagination' => $todos['pagination']
+            ]
+        ]);
     }
 
     public function show(int $id)
