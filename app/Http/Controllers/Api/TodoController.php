@@ -10,6 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Http\Requests\StoreTodoRequest;
 use App\Http\Requests\UpdateTodoRequest;
 use App\Http\Requests\UpdateTodoStatusRequest;
+use App\Helpers\ApiResponse;
+use App\Exceptions\NotFoundException;
+
 
 class TodoController extends Controller
 {
@@ -24,65 +27,67 @@ class TodoController extends Controller
     {
 
         $todos = $this->todoService->getAllWithFilters($request->all(), ['categories']);
-        return response()->json([
-            'status' => 'success',
-            'data' => TodoResource::collection($todos['data']),
-            'meta' => [
+
+        return ApiResponse::success(
+            TodoResource::collection($todos['data']),
+            '',
+            [
                 'pagination' => $todos['pagination']
             ]
-        ]);
+        );
     }
 
     public function show(int $id)
     {
         $todo = $this->todoService->getById($id);
 
-        if (!$todo) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Todo bulunamadı'
-            ], Response::HTTP_NOT_FOUND);
-        }
-
-        return new TodoResource($todo->load('categories'));
+        return ApiResponse::success(
+            new TodoResource($todo->load('categories'))
+        );
     }
 
 
     public function store(StoreTodoRequest $request)
     {
         $todo = $this->todoService->create($request->validated())->load('categories');
-        return new TodoResource($todo);
+
+        return ApiResponse::success(
+            new TodoResource($todo),
+            'Todo başarıyla oluşturuldu.',
+            status: 201
+        );
     }
 
 
     public function update(UpdateTodoRequest $request, int $id)
     {
-        $todo = $this->todoService->update($id, $request->validated());
+        $todo = $this->todoService->update($id, $request->validated())->load('categories');
 
         if (!$todo) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Güncellenecek todo bulunamadı'
-            ], Response::HTTP_NOT_FOUND);
+            throw new NotFoundException("Güncellenecek todo bulunamadı.");
         }
 
-        return new TodoResource($todo->load('categories'));
+        return ApiResponse::success(
+            new TodoResource($todo->load('categories')),
+            'Todo başarıyla güncellendi.'
+        );
     }
 
 
     public function updateStatus(UpdateTodoStatusRequest $request, int $id)
     {
+        $status = $request->safe()->only('status')['status'];
 
-        $todo = $this->todoService->updateStatus($id, $request->validated('status'));
+        $todo = $this->todoService->updateStatus($id, $status);
 
         if (!$todo) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Durumu güncellenecek todo bulunamadı'
-            ], Response::HTTP_NOT_FOUND);
+            throw new NotFoundException("Durumu güncellenecek todo bulunamadı.");
         }
 
-        return new TodoResource($todo);
+        return ApiResponse::success(
+            new TodoResource($todo),
+            'Todo durumu başarıyla güncellendi.'
+        );
     }
 
 
@@ -91,16 +96,10 @@ class TodoController extends Controller
         $deleted = $this->todoService->delete($id);
 
         if (!$deleted) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Silinecek todo bulunamadı'
-            ], Response::HTTP_NOT_FOUND);
+            throw new NotFoundException("Silinecek todo bulunamadı.");
         }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Todo başarıyla silindi'
-        ], Response::HTTP_NO_CONTENT);
+        return ApiResponse::deleted('Todo başarıyla silindi.');
     }
 
     public function search(Request $request)
@@ -108,17 +107,15 @@ class TodoController extends Controller
         $term = $request->query('q');
 
         if (!$term) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Arama terimi (q) gerekli.'
-            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return ApiResponse::error('Arama terimi (q) gerekli.', [], 422);
         }
 
-        $results = $this->todoService->search($term);
+        $results = $this->todoService->search($term, ['categories']);
 
-        return response()->json([
-            'status' => 'success',
-            'data' => TodoResource::collection($results)
-        ]);
+        return ApiResponse::success(
+            TodoResource::collection($results),
+            'Arama sonuçları başarıyla getirildi.'
+
+        );
     }
 }

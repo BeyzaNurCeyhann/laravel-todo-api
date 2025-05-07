@@ -28,14 +28,7 @@ class BaseService implements BaseServiceInterface
 
     public function update(int $id, array $data)
     {
-        $model = $this->repository->find($id);
-
-        if (!$model) {
-            return false;
-        }
-
-        $model->update($data);
-        return $model->fresh();
+        return $this->repository->update($id, $data);
     }
 
     public function delete(int $id)

@@ -28,12 +28,35 @@ class TodoRepository extends BaseRepository implements TodoRepositoryInterface
         return $todo;
     }
 
-    public function search(string $term)
+    public function update(int $id, array $data)
+    {
+        $categoryIds = $data['category_ids'] ?? [];
+        unset($data['category_ids']);
+
+        $todo = $this->find($id);
+        if (!$todo) {
+            return false;
+        }
+
+        $todo->update($data);
+
+        if (!empty($categoryIds)) {
+            $todo->categories()->sync($categoryIds);
+        }
+
+        return $todo->refresh();
+    }
+
+
+    public function search(string $term, array $with = [])
     {
         return $this->model
-            ->where('title', 'like', "%$term%")
-            ->orWhere('description', 'like', "%$term%")
-            ->get();
+        ->when(!empty($with), fn($q) => $q->with($with))
+        ->where(function ($q) use ($term) {
+            $q->where('title', 'like', "%{$term}%")
+              ->orWhere('description', 'like', "%{$term}%");
+        })
+        ->get();
     }
 
 
@@ -45,7 +68,9 @@ class TodoRepository extends BaseRepository implements TodoRepositoryInterface
         }
 
         $todo->status = $status;
-        return $todo->save();
+        $todo->save();
+
+        return $todo->refresh();
     }
 
     public function paginateWithFilters(array $filters, array $with = [])
