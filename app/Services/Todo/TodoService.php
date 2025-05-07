@@ -16,9 +16,9 @@ class TodoService extends BaseService implements TodoServiceInterface
         $this->todoRepository = $todoRepository;
     }
 
-    public function search(string $term, array $with = [])
+    public function search(array $filters, array $with = [])
     {
-        return $this->todoRepository->search($term, $with);
+        return $this->todoRepository->search($filters, $with);
     }
 
     public function updateStatus(int $id, string $status)

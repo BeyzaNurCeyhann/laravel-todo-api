@@ -106,16 +106,20 @@ class TodoController extends Controller
     {
         $term = $request->query('q');
 
-        if (!$term) {
-            return ApiResponse::error('Arama terimi (q) gerekli.', [], 422);
-        }
+    if (!$term) {
+        return ApiResponse::error('Arama terimi (q) gerekli.', [], 422);
+    }
 
-        $results = $this->todoService->search($term, ['categories']);
+    // only alırsak page/limit varsa kullanılır, yoksa default
+    $filters = $request->only(['page', 'limit']);
+    $filters['q'] = $term;
 
-        return ApiResponse::success(
-            TodoResource::collection($results),
-            'Arama sonuçları başarıyla getirildi.'
+    $todos = $this->todoService->search($filters, ['categories']);
 
-        );
+    return ApiResponse::success(
+        TodoResource::collection($todos['data']),
+        '',
+        ['pagination' => $todos['pagination']]
+    );
     }
 }

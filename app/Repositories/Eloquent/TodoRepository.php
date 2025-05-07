@@ -48,15 +48,35 @@ class TodoRepository extends BaseRepository implements TodoRepositoryInterface
     }
 
 
-    public function search(string $term, array $with = [])
+    public function search(array $filters, array $with = [])
     {
-        return $this->model
-        ->when(!empty($with), fn($q) => $q->with($with))
-        ->where(function ($q) use ($term) {
-            $q->where('title', 'like', "%{$term}%")
-              ->orWhere('description', 'like', "%{$term}%");
-        })
-        ->get();
+        $query = $this->model->with($with);
+
+        //Arama
+        if (!empty($filters['q'])) {
+            $term = $filters['q'];
+            $query->where(function ($q) use ($term) {
+                $q->where('title', 'like', "%{$term}%")
+                    ->orWhere('description', 'like', "%{$term}%");
+            });
+        }
+
+        //Sayfalama
+        $limit = isset($filters['limit']) && $filters['limit'] <= 50 ? (int)$filters['limit'] : 10;
+
+        $paginator = $query->paginate($limit);
+
+        return [
+            'data' => $paginator->items(),
+            'pagination' => [
+                'total' => $paginator->total(),
+                'per_page' => $paginator->perPage(),
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'from' => $paginator->firstItem(),
+                'to' => $paginator->lastItem(),
+            ]
+        ];
     }
 
 
