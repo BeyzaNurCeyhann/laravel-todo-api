@@ -7,6 +7,7 @@ use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Services\Category\Interfaces\CategoryServiceInterface;
+use App\Helpers\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use App\Http\Resources\TodoResource;
 
@@ -23,22 +24,21 @@ class CategoryController extends Controller
     {
         $categories = $this->categoryService->getAll();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Kategori listelendi',
-            'data' => CategoryResource::collection($categories)
-        ]);
+        return ApiResponse::success(
+            CategoryResource::collection($categories),
+            'Kategoriler başarıyla listelendi.'
+        );
     }
 
     public function store(StoreCategoryRequest $request): JsonResponse
     {
         $category = $this->categoryService->create($request->validated());
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Kategori başarıyla oluşturuldu',
-            'data' => new CategoryResource($category)
-        ], 201);
+        return ApiResponse::success(
+            new CategoryResource($category),
+            'Kategori başarıyla oluşturuldu.',
+            status: 201
+        );
     }
 
     public function show(int $id): JsonResponse
@@ -46,27 +46,23 @@ class CategoryController extends Controller
         $category = $this->categoryService->getById($id);
 
         if (!$category) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Kategori bulunamadı'
-            ], 404);
+            return ApiResponse::error('Kategori bulunamadı.', status: 404);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => new CategoryResource($category)
-        ]);
+        return ApiResponse::success(
+            new CategoryResource($category),
+            'Kategori başarıyla getirildi.'
+        );
     }
 
     public function update(UpdateCategoryRequest $request, int $id): JsonResponse
     {
         $category = $this->categoryService->update($id, $request->validated());
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Kategori başarıyla güncellendi',
-            'data' => new CategoryResource($category)
-        ]);
+        return ApiResponse::success(
+            new CategoryResource($category),
+            'Kategori başarıyla güncellendi.'
+        );
     }
 
     public function destroy(int $id): JsonResponse
@@ -74,16 +70,10 @@ class CategoryController extends Controller
         $deleted = $this->categoryService->delete($id);
 
         if (!$deleted) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Kategori silinemedi'
-            ], 400);
+            return ApiResponse::error('Kategori silinemedi.', status: 400);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Kategori başarıyla silindi'
-        ], 204);
+        return ApiResponse::deleted('Kategori başarıyla silindi.');
     }
 
     public function todos(int $id)
@@ -91,15 +81,12 @@ class CategoryController extends Controller
         $todos = $this->categoryService->getTodosByCategoryId($id);
 
         if (!$todos) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'İstenen kaynak bulunamadı.'
-            ], 404);
+            return ApiResponse::error('İstenen kategori veya todo bulunamadı.', status: 404);
         }
 
-        return response()->json([
-            'status' => 'success',
-            'data' => TodoResource::collection($todos)
-        ]);
+        return ApiResponse::success(
+            TodoResource::collection($todos),
+            'Kategoriye ait todo’lar başarıyla getirildi.'
+        );
     }
 }
