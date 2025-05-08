@@ -92,11 +92,18 @@ class TodoRepository extends BaseRepository implements TodoRepositoryInterface
 
         return $todo->refresh();
     }
-
     public function paginateWithFilters(array $filters, array $with = [])
     {
-        //dd($filters);
         $query = $this->model->with($with)->filter($filters);
+
+
+        if (isset($filters['due_soon']) && filter_var($filters['due_soon'], FILTER_VALIDATE_BOOLEAN)) {
+            $today = now();
+            $inFuture = now()->addDays(7);
+
+            $query->whereNotNull('due_date')
+                ->whereBetween('due_date', [$today, $inFuture]);
+        }
 
         $allowedSorts = ['created_at', 'due_date', 'priority'];
         $sort = in_array($filters['sort'] ?? '', $allowedSorts) ? $filters['sort'] : 'created_at';
@@ -105,6 +112,7 @@ class TodoRepository extends BaseRepository implements TodoRepositoryInterface
         $order = in_array($order, ['asc', 'desc']) ? $order : 'desc';
 
         $query->orderBy($sort, $order);
+
 
         $limit = isset($filters['limit']) && $filters['limit'] <= 50 ? (int)$filters['limit'] : 10;
 
