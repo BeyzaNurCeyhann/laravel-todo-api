@@ -26,6 +26,7 @@ Route::get('/todos', function () {
     ]);
 });
 */
+
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
@@ -37,7 +38,7 @@ Route::prefix('auth')->group(function () {
 });
 
 
-Route::middleware(['throttle:api'])->group(function () {
+Route::middleware(['auth:api', 'throttle:api'])->group(function () {
 
     Route::prefix('todos')->group(function () {
         Route::get('/', [TodoController::class, 'index']);
@@ -62,7 +63,4 @@ Route::middleware(['throttle:api'])->group(function () {
         Route::get('/todos', [StatController::class, 'todos']);
         Route::get('/priorities', [StatController::class, 'priorities']);
     });
-
 });
-
-
