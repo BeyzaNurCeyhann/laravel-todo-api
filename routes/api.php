@@ -26,34 +26,36 @@ Route::get('/todos', function () {
     ]);
 });
 */
+Route::middleware(['throttle:api'])->group(function () {
 
-Route::prefix('todos')->group(function () {
+    Route::prefix('todos')->group(function () {
+        Route::get('/', [TodoController::class, 'index']);
+        Route::get('/search', [TodoController::class, 'search']);
+        Route::get('/{id}', [TodoController::class, 'show']);
+        Route::post('/', [TodoController::class, 'store']);
+        Route::put('/{id}', [TodoController::class, 'update']);
+        Route::patch('/{id}/status', [TodoController::class, 'updateStatus']);
+        Route::delete('/{id}', [TodoController::class, 'destroy']);
+    });
 
-    Route::get('/', [TodoController::class, 'index']); // Tüm todo'ları listele
-    Route::get('/search', [TodoController::class, 'search']); // Arama
-    Route::get('/{id}', [TodoController::class, 'show']); // Tek todo getir
-    Route::post('/', [TodoController::class, 'store']); // Yeni todo
-    Route::put('/{id}', [TodoController::class, 'update']); // Güncelleme
-    Route::patch('/{id}/status', [TodoController::class, 'updateStatus']); // Durum güncelle
-    Route::delete('/{id}', [TodoController::class, 'destroy']); // Silme (soft delete)
+    Route::prefix('categories')->group(function () {
+        Route::get('/', [CategoryController::class, 'index']);
+        Route::get('/{id}', [CategoryController::class, 'show']);
+        Route::post('/', [CategoryController::class, 'store']);
+        Route::put('/{id}', [CategoryController::class, 'update']);
+        Route::delete('/{id}', [CategoryController::class, 'destroy']);
+        Route::get('/{id}/todos', [CategoryController::class, 'todos']);
+    });
 
-});
+    Route::prefix('stats')->group(function () {
+        Route::get('/todos', [StatController::class, 'todos']);
+        Route::get('/priorities', [StatController::class, 'priorities']);
+    });
 
-Route::prefix('categories')->group(function () {
-
-    Route::get('/', [CategoryController::class, 'index']);
-    Route::get('/{id}', [CategoryController::class, 'show']);
-    Route::post('/', [CategoryController::class, 'store']);
-    Route::put('/{id}', [CategoryController::class, 'update']);
-    Route::delete('/{id}', [CategoryController::class, 'destroy']);
-    Route::get('/{id}/todos', [CategoryController::class, 'todos']);
-});
-
-Route::prefix('stats')->group(function () {
-    Route::get('/todos', [StatController::class, 'todos']);
-    Route::get('/priorities', [StatController::class, 'priorities']);
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+
+
