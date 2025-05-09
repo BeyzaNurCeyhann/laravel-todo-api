@@ -9,6 +9,8 @@ use App\Services\Category\Interfaces\CategoryServiceInterface;
 use App\Services\Category\CategoryService;
 use App\Services\Stat\Interfaces\StatServiceInterface;
 use App\Services\Stat\StatService;
+use App\Services\Auth\Interfaces\AuthServiceInterface;
+use App\Services\Auth\AuthService;
 
 
 class ServiceServiceProvider extends ServiceProvider
@@ -21,6 +23,7 @@ class ServiceServiceProvider extends ServiceProvider
         $this->app->bind(TodoServiceInterface::class, TodoService::class);
         $this->app->bind(CategoryServiceInterface::class, CategoryService::class);
         $this->app->bind(StatServiceInterface::class, StatService::class);
+        $this->app->bind(AuthServiceInterface::class, AuthService::class);
     }
 
     /**
@@ -31,4 +34,3 @@ class ServiceServiceProvider extends ServiceProvider
         //
     }
 }
-
