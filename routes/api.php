@@ -50,13 +50,17 @@ Route::middleware(['auth:api', 'throttle:api'])->group(function () {
         Route::delete('/{id}', [TodoController::class, 'destroy']);
     });
 
-    Route::prefix('categories')->group(function () {
+
+    Route::prefix('categories')->middleware('auth:api')->group(function () {
         Route::get('/', [CategoryController::class, 'index']);
         Route::get('/{id}', [CategoryController::class, 'show']);
-        Route::post('/', [CategoryController::class, 'store']);
-        Route::put('/{id}', [CategoryController::class, 'update']);
-        Route::delete('/{id}', [CategoryController::class, 'destroy']);
-        Route::get('/{id}/todos', [CategoryController::class, 'todos']);
+
+        Route::middleware('role:admin')->group(function () {
+            Route::post('/', [CategoryController::class, 'store']);
+            Route::put('/{id}', [CategoryController::class, 'update']);
+            Route::delete('/{id}', [CategoryController::class, 'destroy']);
+            Route::get('/{id}/todos', [CategoryController::class, 'todos']);
+        });
     });
 
     Route::prefix('stats')->group(function () {
